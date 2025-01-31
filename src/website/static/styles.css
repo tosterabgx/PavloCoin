@@ -10,7 +10,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url('assets/images/background.png') center/cover no-repeat;
+  background: url("images/background.png") center/cover no-repeat;
   font-family: 'Rubik', sans-serif;
   overflow: hidden;
   user-select: none;
@@ -38,7 +38,7 @@ body {
   height: 17.5rem;
   left: 3.3125rem;
   top: 20.9375rem;
-  background: url('assets/images/heads_pavlo_coin.png') center/contain no-repeat;
+  background: url("images/heads_pavlo_coin.png") center/contain no-repeat;
   border: none;
   padding: 0;
   cursor: pointer;

@@ -1,7 +1,7 @@
 import logging
 import sys
 from os import getenv
-
+from pathlib import Path
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums.parse_mode import ParseMode
@@ -11,7 +11,7 @@ from aiohttp.web import run_app
 from aiohttp.web_app import Application
 
 from handlers import router
-from routes import index_handler
+from routes import index_handler, get_path_static
 
 
 TOKEN = getenv("BOT_TOKEN")
@@ -36,6 +36,9 @@ def main():
 
     app = Application()
     app["bot"] = bot
+    
+    app.router.add_static("/static/", path=get_path_static())
+    
     app.router.add_get("/index", index_handler)
     
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
