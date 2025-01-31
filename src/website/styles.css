@@ -1,0 +1,196 @@
+:root {
+  --game-scale: 1;
+  --coin-color: rgba(255, 255, 255, 0.4);
+  --counter-bg: rgba(255, 255, 255, 0.07);
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url('assets/images/background.png') center/cover no-repeat;
+  font-family: 'Rubik', sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none; 
+  -moz-user-select: none;   
+  -ms-user-select: none; 
+}
+
+.game-container {
+  position: relative;
+  height: 42rem;
+  width: 24rem;
+  margin: 0 auto;
+  transform: scale(var(--game-scale));
+  transform-origin: center;
+}
+
+.game-container * {
+  box-sizing: border-box;
+}
+
+.coin-button {
+  position: absolute;
+  width: 17.5rem;
+  height: 17.5rem;
+  left: 3.3125rem;
+  top: 20.9375rem;
+  background: url('assets/images/heads_pavlo_coin.png') center/contain no-repeat;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+  z-index: 10;
+}
+
+.coins-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+[class^="coin-"] {
+  position: absolute;
+  object-fit: cover;
+  transform-origin: 0 0;
+}
+
+.coin-8 {
+  width: 10.625rem;
+  height: 10.625rem;
+  left: 3.0625rem;
+  top: 6.3125rem;
+  transform: rotate(-11.306deg);
+}
+
+.coin-7 {
+  width: 4.5625rem;
+  height: 4.5625rem;
+  left: 1.4375rem;
+  top: 9.875rem;
+  transform: rotate(-11.306deg);
+}
+
+.coin-6 {
+  width: 5.875rem;
+  height: 5.875rem;
+  left: 11.5625rem;
+  top: 10rem;
+  transform: rotate(-62.71deg) scale(1.001, 0.999);
+}
+
+.coin-5 {
+  width: 7.8125rem;
+  height: 7.8125rem;
+  left: 5.5625rem;
+  top: 18.9375rem;
+  transform: rotate(-73.824deg) scale(1.001, 0.999);
+}
+
+.coin-4 {
+  width: 6.6875rem;
+  height: 6.6875rem;
+  left: 11.25rem;
+  top: 9.875rem;
+  transform: rotate(-0.216deg);
+}
+
+.coin-3 {
+  width: 5.875rem;
+  height: 5.875rem;
+  left: 7.75rem;
+  top: 21.125rem;
+  transform: rotate(-161.775deg) scale(1.001, 0.999);
+}
+
+.coin-2 {
+  width: 4.5625rem;
+  height: 4.5625rem;
+  left: 16.6875rem;
+  top: 18.6875rem;
+  transform: rotate(-154.156deg) scale(1.001, 0.999);
+}
+
+.coin-1 {
+  width: 6.375rem;
+  height: 6.375rem;
+  left: 16rem;
+  top: 11rem;
+  transform: rotate(-11.306deg);
+}
+
+
+.counter {
+  position: absolute;
+  min-width: 19.9375rem;
+  height: 7.75rem;
+  left: 50%;
+  top: 8.5rem;
+  transform: translateX(-50%);
+  background: var(--counter-bg);
+  backdrop-filter: blur(0.80625rem);
+  border: 0.0625rem solid var(--coin-color);
+  border-radius: 2.5rem;
+  color: #fff;
+  font-size: 3.4375rem;
+  font-weight: 800;
+  line-height: 7.75rem;
+  text-align: center;
+  padding: 0 2rem;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* Media Queries for different devices */
+
+/* iPhone SE, iPhone 8 (Small phones) */
+@media (max-width: 375px) {
+  :root {
+    --game-scale: 0.7;
+  }
+}
+
+/* iPhone 12/13/14, iPhone X/XS (Medium phones) */
+@media (min-width: 376px) and (max-width: 390px) {
+  :root {
+    --game-scale: 0.75;
+  }
+}
+
+/* iPhone 12/13/14 Pro Max (Large phones) */
+@media (min-width: 391px) and (max-width: 428px) {
+  :root {
+    --game-scale: 0.8;
+  }
+}
+
+/* iPads (Portrait) */
+@media (min-width: 768px) and (max-width: 834px) {
+  :root {
+    --game-scale: 1.2;
+  }
+}
+
+/* iPads (Landscape) */
+@media (min-width: 1024px) and (max-width: 1366px) {
+  :root {
+    --game-scale: 1.4;
+  }
+}
+
+/* Larger screens */
+@media (min-width: 1367px) {
+  :root {
+    --game-scale: 1.6;
+  }
+}
+
+/* Handle very short heights */
+@media (max-height: 700px) {
+  :root {
+    --game-scale: 0.65;
+  }
+}
