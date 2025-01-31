@@ -43,6 +43,7 @@ body {
   padding: 0;
   cursor: pointer;
   transition: transform 0.1s;
+  outline: none;
   z-index: 10;
 }
 
