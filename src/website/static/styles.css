@@ -46,6 +46,7 @@ body {
   outline: none;
   z-index: 10;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .coins-container {

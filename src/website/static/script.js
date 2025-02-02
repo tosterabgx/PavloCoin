@@ -1,3 +1,7 @@
+if (!('vibrate' in navigator)) {
+    console.log('Vibration API not supported');
+}
+
 if (window.Telegram && window.Telegram.WebApp) {
     const tg = window.Telegram.WebApp;
     tg.expand(); // Expands the Mini-App UI
@@ -42,9 +46,34 @@ if (window.Telegram && window.Telegram.WebApp) {
         }
     }
 
-    // Handle button clicks
-    document.querySelector('.coin-button').addEventListener('click', () => {
+    const coinButton = document.querySelector('.coin-button');
+    
+    // Function to trigger haptic feedback
+    function triggerHaptic() {
+        if (window.navigator && window.navigator.vibrate) {
+            // Trigger a short vibration (50ms)
+            window.navigator.vibrate(50);
+        }
+    }
+
+    // Touch event handler
+    coinButton.addEventListener('touchstart', (event) => {
+        // Get the number of touch points
+        const touchCount = event.touches.length;
+        // Increment score by the number of fingers
+        score.value += touchCount;
+        score.update();
+        sendScoreToServer();
+        triggerHaptic(); // Add haptic feedback
+        
+        // Prevent default touch behavior
+        event.preventDefault();
+    });
+
+    // Click handler for mouse users
+    coinButton.addEventListener('click', () => {
         score.increment();
+        triggerHaptic(); // Add haptic feedback
     });
 
     // Load initial score from server
