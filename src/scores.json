@@ -1,1 +1,8 @@
-{}
+{
+    "123456789": {
+        "score": 150,
+        "level": 2,
+        "earnPerTap": 2,
+        "levelUpThreshold": 1000
+    }
+}

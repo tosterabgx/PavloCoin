@@ -15,9 +15,26 @@
 </head>
 <body>
   <div class="game-container">
-    <button class="coin-button"></button>
+
+    <div class="level-panel-container">
+      <div class="level-panel" id="earn-per-tap">
+        <div class="panel-title">Earn per tap</div>
+        <div class="panel-value">1</div>  
+      </div>
+      <div class="level-panel" id="level-up-at">
+        <div class="panel-title">Level up at</div>
+        <div class="panel-value">100</div>
+      </div>
+      <div class="level-panel" id="current-level">
+        <div class="panel-title">Current level</div>
+        <div class="panel-value">1</div>
+      </div>
+    </div>
     
-    <!-- Decorative coins -->
+    
+    
+    <div class="counter" id="score">0</div>
+
     <div class="coins-container">
       <img class="coin-8" src="static/images/tails_pavlo_coin.png" />
       <img class="coin-7" src="static/images/tails_pavlo_coin.png" />
@@ -28,9 +45,12 @@
       <img class="coin-2" src="static/images/tails_pavlo_coin.png" />
       <img class="coin-1" src="static/images/tails_pavlo_coin.png" />
     </div>
+
+    <div class="coin-button-container">
+      <button class="coin-button"></button>
+    </div>
     
-    <!-- Counter -->
-    <div class="counter" id="score">0</div>
+    
   </div>
 </body>
 </html>

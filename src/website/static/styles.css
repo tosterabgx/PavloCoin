@@ -32,22 +32,44 @@ body {
   box-sizing: border-box;
 }
 
-.coin-button {
+.coin-button-container {
   position: absolute;
   width: 17.5rem;
   height: 17.5rem;
   left: 3.3125rem;
   top: 20.9375rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-origin: center center;
+}
+
+.coin-button {
+  width: 100%;
+  height: 100%;
   background: url("images/heads_pavlo_coin.png") center/contain no-repeat;
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.1s ease, transform-origin 0s ease; /* Added transition for transform-origin */
   outline: none;
   z-index: 10;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  transform-origin: center center;
 }
+
+.coin-button:active {
+  transform: scale(0.95); /* Shrinks the button to 95% of its size on click */
+  transform-origin: center center; /* Keep origin centered on active state */
+}
+
+/* Ensure button returns to its normal size when no longer active */
+.coin-button:not(:active) {
+  transform-origin: center center;;
+}
+
+
 
 .coins-container {
   position: absolute;
@@ -197,3 +219,43 @@ body {
     --game-scale: 0.65;
   }
 }
+
+
+.level-panel-container {
+  position: absolute;
+  top: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  z-index: 10;
+}
+
+.level-panel {
+  width: 7rem;
+  height: auto;
+  font-size: 1rem;
+  text-align: center;
+  color: #fff;
+  background: var(--counter-bg);
+  border: 0.0625rem solid var(--coin-color);
+  border-radius: 1.2rem;
+  line-height: 1.5rem;
+  padding: 0.5rem 0.3rem;
+  backdrop-filter: blur(0.5rem);
+}
+
+.panel-title {
+  font-size: 0.9rem;
+  font-weight: 600; /* Bold but smaller weight */
+  color: #fff;
+}
+
+.panel-value {
+  font-size: 1.4rem;
+  font-weight: 400; /* Larger text, no bold */
+  color: #fff;
+  margin-top: 0.2rem;
+}
+

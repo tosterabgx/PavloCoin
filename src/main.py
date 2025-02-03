@@ -52,6 +52,37 @@ async def get_score(request: Request):
         content_type="application/json",
     )
 
+async def update_score(request: Request):
+    data = await request.json()
+    user_id = str(data.get("user_id"))
+    score = data.get("score")
+    level = data.get("level")
+    earn_per_tap = data.get("earnPerTap")
+    level_up_threshold = data.get("levelUpThreshold")
+
+    if not user_id or score is None:
+        return Response(text="Invalid data", status=400)
+
+    scores = load_scores()
+    scores[user_id] = {
+        "score": max(scores.get(user_id, {}).get("score", 0), score),
+        "level": level,
+        "earnPerTap": earn_per_tap,
+        "levelUpThreshold": level_up_threshold
+    }
+    save_scores(scores)
+    return Response(text="Score updated")
+
+async def get_score(request: Request):
+    user_id = request.query.get("user_id")
+    if not user_id:
+        return Response(text="User ID required", status=400)
+
+    scores = load_scores()
+    user_data = scores.get(user_id, {"score": 0, "level": 1, "earnPerTap": 1, "levelUpThreshold": 100})
+    return Response(text=json.dumps(user_data), content_type="application/json")
+
+
 async def on_startup(bot: Bot, base_url: str):
     await bot.set_webhook(f"{base_url}/webhook")
     await bot.set_chat_menu_button(
