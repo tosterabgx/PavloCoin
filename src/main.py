@@ -10,6 +10,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from aiohttp.web import run_app, Request, Response, Application
 from aiogram.client.default import DefaultBotProperties
 from handlers import router
+from routes import index_handler, get_path_static
 
 
 TOKEN = getenv("BOT_TOKEN")
@@ -101,9 +102,14 @@ def main():
 
     app = Application()
     app["bot"] = bot
+    
+    app.router.add_static("/static/", path=get_path_static())
 
+    app.router.add_get("/index", index_handler)
+    
     app.router.add_post("/update_score", update_score)  
     app.router.add_get("/get_score", get_score)
+    
     
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
 
