@@ -6,7 +6,7 @@ from pathlib import Path
 from aiogram import Bot, Dispatcher
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.types import MenuButtonWebApp, WebAppInfo
-from aiogram.webhook.aiohttp_server import setup_application
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp.web import run_app, Request, Response, Application
 from aiogram.client.default import DefaultBotProperties
 
@@ -102,6 +102,8 @@ def main():
 
     app.router.add_post("/update_score", update_score)  
     app.router.add_get("/get_score", get_score)
+    
+    SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
 
     setup_application(app, dp, bot=bot)
     run_app(app, host="0.0.0.0", port=80)
