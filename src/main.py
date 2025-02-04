@@ -9,6 +9,7 @@ from aiogram.types import MenuButtonWebApp, WebAppInfo
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp.web import run_app, Request, Response, Application
 from aiogram.client.default import DefaultBotProperties
+from handlers import router
 
 
 TOKEN = getenv("BOT_TOKEN")
@@ -96,6 +97,7 @@ def main():
     dp["base_url"] = WEB_APP_URL
 
     dp.startup.register(on_startup)
+    dp.include_router(router)
 
     app = Application()
     app["bot"] = bot
