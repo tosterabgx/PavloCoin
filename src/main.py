@@ -6,8 +6,9 @@ from pathlib import Path
 from aiogram import Bot, Dispatcher
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.types import MenuButtonWebApp, WebAppInfo
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.webhook.aiohttp_server import setup_application
 from aiohttp.web import run_app, Request, Response, Application
+from aiogram.client.default import DefaultBotProperties
 
 
 TOKEN = getenv("BOT_TOKEN")
@@ -90,7 +91,7 @@ async def on_startup(bot: Bot, base_url: str):
     )
 
 def main():
-    bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML)
+    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     dp["base_url"] = WEB_APP_URL
 
