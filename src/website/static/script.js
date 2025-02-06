@@ -7,13 +7,21 @@ if (window.Telegram && window.Telegram.WebApp) {
     level: 1,
     earnPerTap: 1,
     levelUpThreshold: 100,
+    energyLeft: 1000,
+    maxEnergy: 1000,
     element: document.getElementById('score'),
-    levelElement: document.getElementById('current-level'),
+    levelElement: document.getElementById('energy-left'),
     earnElement: document.getElementById('earn-per-tap'),
     levelUpElement: document.getElementById('level-up-at'),
 
     increment(tapCount = 1) {
+        // Check if we have enough energy
+        if (this.energyLeft <= 0) {
+            return; // Don't allow tapping if no energy left
+        }
+        
         this.value += this.earnPerTap * tapCount;
+        this.energyLeft -= tapCount;
         this.checkLevelUp();
         this.update();
         sendScoreToServer();
@@ -24,6 +32,7 @@ if (window.Telegram && window.Telegram.WebApp) {
         this.level++;
         this.levelUpThreshold *= 10;
         this.earnPerTap = this.level;
+        // Don't immediately update energy - it will update next day
         
         // Add level up animation
         const coins = document.querySelectorAll('[class^="coin-"]');
@@ -54,8 +63,8 @@ if (window.Telegram && window.Telegram.WebApp) {
     update() {
     this.element.textContent = this.value.toLocaleString();
 
-    // Update "Current level"
-    this.levelElement.querySelector('.panel-value').textContent = this.level;
+    // Update "Energy left"
+    this.levelElement.querySelector('.panel-value').textContent = this.energyLeft.toLocaleString();
 
     // Update "Earn per tap"
     this.earnElement.querySelector('.panel-value').textContent = this.earnPerTap;
@@ -72,21 +81,29 @@ if (window.Telegram && window.Telegram.WebApp) {
         if (!userId) return;
     
         try {
+            const initData = tg.initData;
+            
             await fetch("/update_score", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                user_id: userId,
-                score: score.value,
-                level: score.level,
-                earnPerTap: score.earnPerTap,
-                levelUpThreshold: score.levelUpThreshold
-            })
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "X-Telegram-Init-Data": initData
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    score: score.value,
+                    level: score.level,
+                    earnPerTap: score.earnPerTap,
+                    levelUpThreshold: score.levelUpThreshold,
+                    energyLeft: score.energyLeft,
+                    maxEnergy: score.maxEnergy,
+                    timestamp: Date.now()
+                })
             });
         } catch (error) {
             console.error("Error sending score:", error);
         }
-        }
+    }
     async function loadScore() {
         if (!userId) return;
     
@@ -94,11 +111,25 @@ if (window.Telegram && window.Telegram.WebApp) {
             const res = await fetch(`/get_score?user_id=${userId}`);
             const data = await res.json();
     
+            // Check if it's a new day and reset energy if needed
+            const lastResetTime = data.lastResetTime || Date.now() / 1000;
+            const currentTime = Date.now() / 1000;
+            const isNewDay = (currentTime - lastResetTime) >= 86400;
+
             score.value = data.score || 0;
             score.level = data.level || 1;
             score.earnPerTap = data.earnPerTap || 1;
             score.levelUpThreshold = data.levelUpThreshold || 100;
-    
+            
+            if (isNewDay) {
+                // Reset energy to max on new day
+                score.energyLeft = score.level * 1000;
+                score.maxEnergy = score.level * 1000;
+            } else {
+                score.energyLeft = data.energyLeft || 1000;
+                score.maxEnergy = data.maxEnergy || 1000;
+            }
+
             score.update();
         } catch (error) {
             console.error("Error loading score:", error);
@@ -109,7 +140,6 @@ if (window.Telegram && window.Telegram.WebApp) {
 
     coinButton.addEventListener('touchstart', (event) => {
         const touchCount = event.touches.length;
-        console.log(`Touch count: ${touchCount}`); // Debugging line
         score.increment(touchCount);
         coinButton.style.transform = 'scale(0.95)';
         

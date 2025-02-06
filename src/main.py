@@ -11,6 +11,14 @@ from aiohttp.web import run_app, Request, Response, Application
 from aiogram.client.default import DefaultBotProperties
 from handlers import router
 from routes import index_handler, get_path_static
+from aiohttp import web
+from middleware import security_middleware
+import hashlib
+import hmac
+from typing import Optional
+from cryptography.fernet import Fernet
+import base64
+import time
 
 
 TOKEN = getenv("BOT_TOKEN")
@@ -29,19 +37,184 @@ def save_scores(scores):
     with open(DATA_FILE, "w") as f:
         json.dump(scores, f, indent=4)
 
+class SecureWebApp:
+    def __init__(self, bot_token: str):
+        # Generate secret key based on bot token
+        self.secret_key = hashlib.sha256(bot_token.encode()).digest()
+        # Initialize Fernet for data encryption
+        self.fernet = Fernet(base64.urlsafe_b64encode(self.secret_key))
+
+    def validate_telegram_hash(self, init_data: str, hash: str) -> bool:
+        """Validate Telegram Web App init data"""
+        if not init_data or not hash:
+            return False
+        
+        # Calculate data_check_string
+        data_check_string = '\n'.join(
+            f"{k}={v}" for k, v in sorted(
+                x.split('=') for x in init_data.split('&')
+                if x.split('=')[0] != 'hash'
+            )
+        )
+        
+        # Calculate secret key
+        secret_key = hmac.new(
+            key=b"WebAppData",
+            msg=self.bot_token.encode(),
+            digestmod=hashlib.sha256
+        ).digest()
+        
+        # Calculate hash
+        calculated_hash = hmac.new(
+            key=secret_key,
+            msg=data_check_string.encode(),
+            digestmod=hashlib.sha256
+        ).hexdigest()
+        
+        return calculated_hash == hash
+
+    def encrypt_data(self, data: dict) -> str:
+        """Encrypt data before saving"""
+        return self.fernet.encrypt(json.dumps(data).encode()).decode()
+
+    def decrypt_data(self, encrypted_data: str) -> Optional[dict]:
+        """Decrypt data after loading"""
+        try:
+            return json.loads(self.fernet.decrypt(encrypted_data.encode()).decode())
+        except Exception:
+            return None
+
 async def update_score(request: Request):
-    data = await request.json()
-    user_id = str(data.get("user_id"))
-    score = data.get("score")
+    secure_app = request.app["secure"]
+    
+    # Get init data from header
+    init_data = request.headers.get("X-Telegram-Init-Data")
+    if not init_data:
+        return web.Response(status=403, text="Missing authentication")
 
-    if not user_id or score is None:
-        return Response(text="Invalid data", status=400)
+    try:
+        data = await request.json()
+        user_id = str(data.get("user_id"))
+        new_score = data.get("score")
+        new_level = data.get("level")
+        new_earn_per_tap = data.get("earnPerTap")
+        new_level_up_threshold = data.get("levelUpThreshold")
+        timestamp = data.get("timestamp")
+        current_time = time.time()
 
-    scores = load_scores()
-    scores[user_id] = max(scores.get(user_id, 0), score)  # Ensure highest score is saved
-    save_scores(scores)
+        # Load previous state
+        scores = load_scores()
+        prev_data = None
+        if user_id in scores:
+            try:
+                prev_data = secure_app.decrypt_data(scores[user_id])
+            except Exception:
+                prev_data = {
+                    "score": 0,
+                    "level": 1,
+                    "earnPerTap": 1,
+                    "levelUpThreshold": 100,
+                    "energyLeft": 1000,
+                    "maxEnergy": 1000,
+                    "lastResetTime": current_time
+                }
+        else:
+            prev_data = {
+                "score": 0,
+                "level": 1,
+                "earnPerTap": 1,
+                "levelUpThreshold": 100,
+                "energyLeft": 1000,
+                "maxEnergy": 1000,
+                "lastResetTime": current_time
+            }
 
-    return Response(text="Score updated")
+        # Check if it's a new day
+        is_new_day = (current_time - prev_data["lastResetTime"]) >= 86400
+        new_energy = data.get("energyLeft")
+        
+        if is_new_day:
+            # Reset energy to max on new day
+            new_energy = new_level * 1000
+            prev_data["lastResetTime"] = current_time
+
+        # Validate score progression
+        if not validate_score_progression(
+            prev_data["score"], new_score,
+            prev_data["level"], new_level,
+            prev_data["earnPerTap"], new_earn_per_tap,
+            prev_data["levelUpThreshold"], new_level_up_threshold,
+            prev_data["energyLeft"], new_energy,
+            prev_data["maxEnergy"], new_level * 1000,
+            prev_data["lastResetTime"], current_time
+        ):
+            return web.Response(status=400, text="Invalid score progression")
+
+        # Encrypt and save valid data
+        encrypted_data = secure_app.encrypt_data({
+            "score": new_score,
+            "level": new_level,
+            "earnPerTap": new_earn_per_tap,
+            "levelUpThreshold": new_level_up_threshold,
+            "energyLeft": new_energy,
+            "maxEnergy": new_level * 1000,
+            "lastResetTime": prev_data["lastResetTime"]
+        })
+        
+        scores[user_id] = encrypted_data
+        save_scores(scores)
+        
+        return web.Response(text="Score updated")
+        
+    except json.JSONDecodeError:
+        return web.Response(status=400, text="Invalid JSON")
+    except Exception as e:
+        logging.error(f"Error updating score: {e}")
+        return web.Response(status=500, text="Internal server error")
+
+def validate_score_progression(
+    prev_score: int, new_score: int,
+    prev_level: int, new_level: int,
+    prev_earn: int, new_earn: int,
+    prev_threshold: int, new_threshold: int,
+    prev_energy: int, new_energy: int,
+    prev_max_energy: int, new_max_energy: int,
+    last_reset_time: float, current_time: float
+) -> bool:
+    """Validate that score progression follows game rules"""
+    
+    # Check if it's a new day (86400 seconds = 24 hours)
+    is_new_day = (current_time - last_reset_time) >= 86400
+    
+    # Energy validation
+    if is_new_day:
+        # On a new day, energy should be set to level * 1000
+        if new_energy != new_level * 1000:
+            return False
+    else:
+        # During same day, energy can only decrease
+        if new_energy > prev_energy:
+            return False
+    
+    # Score should never decrease
+    if new_score < prev_score:
+        return False
+        
+    # Maximum possible score increase per request (assuming max 10 fingers * 2 seconds)
+    max_possible_increase = prev_earn * 20
+    if new_score - prev_score > max_possible_increase:
+        return False
+        
+    # Level progression validation
+    if new_level > prev_level:
+        if new_level != prev_level + 1:  # Can only increase by 1
+            return False
+        if new_earn != new_level:  # Earn should match level
+            return False
+        if new_threshold != prev_threshold * 10:  # Threshold should multiply by 10
+            return False
+            
+    return True
 
 async def get_score(request: Request):
     user_id = request.query.get("user_id")
@@ -55,37 +228,6 @@ async def get_score(request: Request):
         content_type="application/json",
     )
 
-async def update_score(request: Request):
-    data = await request.json()
-    user_id = str(data.get("user_id"))
-    score = data.get("score")
-    level = data.get("level")
-    earn_per_tap = data.get("earnPerTap")
-    level_up_threshold = data.get("levelUpThreshold")
-
-    if not user_id or score is None:
-        return Response(text="Invalid data", status=400)
-
-    scores = load_scores()
-    scores[user_id] = {
-        "score": max(scores.get(user_id, {}).get("score", 0), score),
-        "level": level,
-        "earnPerTap": earn_per_tap,
-        "levelUpThreshold": level_up_threshold
-    }
-    save_scores(scores)
-    return Response(text="Score updated")
-
-async def get_score(request: Request):
-    user_id = request.query.get("user_id")
-    if not user_id:
-        return Response(text="User ID required", status=400)
-
-    scores = load_scores()
-    user_data = scores.get(user_id, {"score": 0, "level": 1, "earnPerTap": 1, "levelUpThreshold": 100})
-    return Response(text=json.dumps(user_data), content_type="application/json")
-
-
 async def on_startup(bot: Bot, base_url: str):
     await bot.set_webhook(f"{base_url}/webhook")
     await bot.set_chat_menu_button(
@@ -96,13 +238,23 @@ def main():
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     dp["base_url"] = WEB_APP_URL
-
+    
+    # Initialize secure web app
+    secure_app = SecureWebApp(TOKEN)
+    
+    app = Application()
+    app["bot"] = bot
+    app["secure"] = secure_app
+    
+    # Add security middleware
+    app.middlewares.append(security_middleware)
+    
+    # Rate limiting middleware
+    app.middlewares.append(rate_limit_middleware)
+    
     dp.startup.register(on_startup)
     dp.include_router(router)
 
-    app = Application()
-    app["bot"] = bot
-    
     app.router.add_static("/static/", path=get_path_static())
 
     app.router.add_get("/index", index_handler)

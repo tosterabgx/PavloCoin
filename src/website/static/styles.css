@@ -78,7 +78,7 @@ body {
   position: absolute;
   object-fit: cover;
   transform-origin: 0 0;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.2s ease-in-out;
 }
 
 .coin-8 {
@@ -218,6 +218,33 @@ body {
 @media (max-height: 700px) {
   :root {
     --game-scale: 0.55;
+  }
+}
+
+/* Base mobile styles (including iPhone 15) */
+@media (max-width: 430px) {
+  :root {
+    --game-scale: 0.8;
+  }
+  
+  .level-panel {
+    width: 6rem;
+    font-size: 0.9rem;
+  }
+  
+  .panel-title {
+    font-size: 0.8rem;
+  }
+  
+  .panel-value {
+    font-size: 1.2rem;
+  }
+  
+  .counter {
+    min-width: 16rem;
+    height: 6rem;
+    font-size: 2.8rem;
+    line-height: 6rem;
   }
 }
 
