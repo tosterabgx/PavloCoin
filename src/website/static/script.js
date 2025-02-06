@@ -23,7 +23,31 @@ if (window.Telegram && window.Telegram.WebApp) {
         if (this.value >= this.levelUpThreshold) {
         this.level++;
         this.levelUpThreshold *= 10;
-        this.earnPerTap = this.level; // Earn increases with level
+        this.earnPerTap = this.level;
+        
+        // Add level up animation
+        const coins = document.querySelectorAll('[class^="coin-"]');
+        coins.forEach(coin => {
+            // Skip the coin button
+            if (coin.classList.contains('button')) return;
+            
+            // Store original transform
+            if (!coin.dataset.originalTransform) {
+                coin.dataset.originalTransform = getComputedStyle(coin).transform;
+            }
+            
+            // Subtle scatter effect
+            const randomX = (Math.random() - 0.5) * 800; // Reduced from 50 to 20
+            const randomY = (Math.random() - 0.5) * 800; // Reduced from 50 to 20
+            const randomRotate = (Math.random() - 0.5) * 40; // Reduced from 180 to 30
+            
+            coin.style.transform = `${coin.dataset.originalTransform} translate(${randomX}px, ${randomY}px) rotate(${randomRotate}deg)`;
+            
+            // Reset to original position after animation
+            setTimeout(() => {
+                coin.style.transform = coin.dataset.originalTransform;
+            }, 500);
+        });
         }
     },
 
@@ -81,15 +105,36 @@ if (window.Telegram && window.Telegram.WebApp) {
         }
     }
 
-    const coinButton = document.querySelector('.coin-button');
+    const coinButton = document.querySelector('button');
 
     coinButton.addEventListener('touchstart', (event) => {
         const touchCount = event.touches.length;
+        console.log(`Touch count: ${touchCount}`); // Debugging line
         score.increment(touchCount);
+        coinButton.style.transform = 'scale(0.95)';
+        
+        // Check if HapticFeedback is available and supported
+        if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+            tg.HapticFeedback.impactOccurred(); // Trigger haptic feedback on touch
+        } else {
+            console.warn("HapticFeedback is not supported in this version."); // Warning message
+        }
+        
         event.preventDefault();
     });
 
-    coinButton.addEventListener('click', () => score.increment());
+    coinButton.addEventListener('touchend', () => {
+        coinButton.style.transform = 'scale(1)';
+    });
+
+    coinButton.addEventListener('click', () => {
+        if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+            tg.HapticFeedback.impactOccurred(); // Trigger haptic feedback on click
+        } else {
+            console.warn("HapticFeedback is not supported in this version."); // Warning message
+        }
+        score.increment();
+    });
 
     loadScore();
 }
