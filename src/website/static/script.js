@@ -168,3 +168,5 @@ if (window.Telegram && window.Telegram.WebApp) {
 
     loadScore();
 }
+
+console.log("tg object:", tg); // Check the contents of tg

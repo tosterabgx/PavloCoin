@@ -12,14 +12,20 @@ from aiogram.client.default import DefaultBotProperties
 from handlers import router
 from routes import index_handler, get_path_static
 from aiohttp import web
-from middleware import security_middleware
+from middleware import security_middleware, rate_limit_middleware
 import hashlib
 import hmac
 from typing import Optional
 from cryptography.fernet import Fernet
 import base64
 import time
+import os
 
+
+# Load the token from an environment variable or set it directly
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')  # Ensure this environment variable is set
+if TOKEN is None:
+    raise ValueError("The TELEGRAM_BOT_TOKEN environment variable is not set.")
 
 TOKEN = getenv("BOT_TOKEN")
 WEB_APP_URL = getenv("WEB_APP_URL")
@@ -242,15 +248,9 @@ def main():
     # Initialize secure web app
     secure_app = SecureWebApp(TOKEN)
     
-    app = Application()
+    app = Application(middlewares=[rate_limit_middleware, security_middleware])
     app["bot"] = bot
     app["secure"] = secure_app
-    
-    # Add security middleware
-    app.middlewares.append(security_middleware)
-    
-    # Rate limiting middleware
-    app.middlewares.append(rate_limit_middleware)
     
     dp.startup.register(on_startup)
     dp.include_router(router)
@@ -261,7 +261,6 @@ def main():
     
     app.router.add_post("/update_score", update_score)  
     app.router.add_get("/get_score", get_score)
-    
     
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
 
