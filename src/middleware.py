@@ -5,10 +5,16 @@ from aiohttp.web import middleware
 from typing import Callable
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
+import os
+from os import getenv
 
 rate_limits = defaultdict(lambda: {"count": 0, "reset_time": time.time()})
 RATE_LIMIT_WINDOW = 60  # 1 minute
 MAX_REQUESTS = 100      # max requests per minute
+
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
+if not TOKEN:
+    raise ValueError("Telegram bot token is not set (check TELEGRAM_BOT_TOKEN or BOT_TOKEN)!")
 
 @middleware
 async def rate_limit_middleware(request: Request, handler: Callable) -> Response:

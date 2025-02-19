@@ -21,11 +21,10 @@ import base64
 import time
 import os
 
-
-# Load the token from an environment variable or set it directly
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')  # Ensure this environment variable is set
-if TOKEN is None:
-    raise ValueError("The TELEGRAM_BOT_TOKEN environment variable is not set.")
+# Use one of the environment variables
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
+if not TOKEN:
+    raise ValueError("Telegram bot token is not set (check TELEGRAM_BOT_TOKEN or BOT_TOKEN)!")
 
 TOKEN = getenv("BOT_TOKEN")
 WEB_APP_URL = getenv("WEB_APP_URL")
@@ -243,7 +242,7 @@ async def on_startup(bot: Bot, base_url: str):
 def main():
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
-    dp["base_url"] = WEB_APP_URL
+    dp["base_url"] = os.getenv("WEB_APP_URL")
     
     # Initialize secure web app
     secure_app = SecureWebApp(TOKEN)
@@ -265,7 +264,10 @@ def main():
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
 
     setup_application(app, dp, bot=bot)
-    run_app(app, host="0.0.0.0", port=80)
+    
+    # Use a dynamic port if provided by the host environment (e.g., amvera cloud)
+    port = int(os.environ.get("PORT", 80))
+    run_app(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
