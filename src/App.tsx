@@ -3,6 +3,9 @@ import Button from "./components/Button";
 import Counter from "./components/Counter";
 import Topbar from "./components/Topbar";
 import { useState, useMemo } from "react";
+import dollarIcon from "./assets/images/dollar_icon.png";
+import starIcon from "./assets/images/star_icon.png";
+import diamondIcon from "./assets/images/diamond_icon.png";
 
 export default function App() {
   const [coins, setCoins] = useState(0);
@@ -28,9 +31,13 @@ export default function App() {
 
       <main className="flex w-full flex-1 flex-col items-center justify-between">
         <section className="flex justify-center gap-2">
-          <Panel title="Earn per tap" value={earnPerTap} />
-          <Panel title="Level up at" value={levelUpAt} />
-          <Panel title="Current level" value={currentLevel} />
+          <Panel title="Earn per tap" icon={dollarIcon} value={earnPerTap} />
+          <Panel title="Level up at" icon={starIcon} value={levelUpAt} />
+          <Panel
+            title="Current level"
+            icon={diamondIcon}
+            value={currentLevel}
+          />
         </section>
 
         <section className="flex items-center justify-center bg-[url('assets/images/coins.png')] bg-contain bg-center bg-no-repeat px-10 py-20">
