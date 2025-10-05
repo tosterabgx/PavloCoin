@@ -20,22 +20,22 @@
   @keyframes flip-coin {
     from {
       transform: rotateY(0deg);
-      content: url("/src/assets/images/tails.png");
+      content: url("assets/images/tails.png");
     }
     to {
       transform: rotateY(180deg);
-      content: url("/src/assets/images/heads.png");
+      content: url("assets/images/heads.png");
     }
   }
 
   @keyframes unflip-coin {
     from {
       transform: rotateY(180deg);
-      content: url("/src/assets/images/heads.png");
+      content: url("assets/images/heads.png");
     }
     to {
       transform: rotateY(0deg);
-      content: url("/src/assets/images/tails.png");
+      content: url("assets/images/tails.png");
     }
   }
 }
@@ -44,10 +44,13 @@
   #root {
     @apply w-screen;
     @apply h-screen;
+    @apply overflow-hidden;
+
+    @apply select-none;
 
     @apply font-rubik;
 
-    @apply bg-[url('/src/assets/images/gradient.png')];
+    @apply bg-[url('assets/images/gradient.png')];
     @apply bg-cover;
     @apply bg-right;
   }
