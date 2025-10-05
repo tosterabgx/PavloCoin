@@ -22,6 +22,10 @@ export default function App() {
       setCurrentLevel(currentLevel + 1);
 
       flipButton(!isButtonFlipped);
+
+      if ("vibrate" in navigator) {
+        navigator.vibrate([200, 50, 200]);
+      }
     }
   }
 
