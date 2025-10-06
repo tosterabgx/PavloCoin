@@ -1,13 +1,12 @@
-import Panel from "./components/Panel";
-import Button from "./components/Button";
-import Counter from "./components/Counter";
 import Topbar from "./components/Topbar";
+import MainPage from "./components/MainPage";
+import InvitePage from "./components/InvitePage";
+
 import { useState, useMemo } from "react";
-import dollarIcon from "./assets/images/dollar_icon.png";
-import starIcon from "./assets/images/star_icon.png";
-import diamondIcon from "./assets/images/diamond_icon.png";
 
 export default function App() {
+  const [isMainPage, setMainPage] = useState(true);
+
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [isButtonFlipped, flipButton] = useState(false);
@@ -15,7 +14,7 @@ export default function App() {
   const earnPerTap = useMemo(() => 2 ** currentLevel, [currentLevel]);
   const levelUpAt = useMemo(() => 10 ** (currentLevel + 1), [currentLevel]);
 
-  function clickCoin() {
+  function onClickCoin() {
     setCoins(coins + earnPerTap);
 
     if (coins + earnPerTap >= levelUpAt) {
@@ -29,26 +28,31 @@ export default function App() {
     }
   }
 
+  const additionalBackground = !isMainPage
+    ? "bg-[url('assets/images/coins2.png')]"
+    : "";
+
   return (
-    <div className="flex h-screen w-screen flex-col text-white">
-      <Topbar username="@username" />
-
-      <main className="flex w-full flex-1 flex-col items-center justify-between">
-        <section className="flex justify-center gap-2">
-          <Panel title="Earn per tap" icon={dollarIcon} value={earnPerTap} />
-          <Panel title="Level up at" icon={starIcon} value={levelUpAt} />
-          <Panel
-            title="Current level"
-            icon={diamondIcon}
-            value={currentLevel}
+    <div
+      className={
+        "flex h-screen w-screen flex-col bg-contain bg-center bg-no-repeat text-white " +
+        additionalBackground
+      }
+    >
+      <Topbar username="@username" onClick={() => setMainPage(!isMainPage)} />
+      <main className="flex w-full flex-1 flex-col items-center justify-between pb-15">
+        {isMainPage ? (
+          <MainPage
+            earnPerTap={earnPerTap}
+            levelUpAt={levelUpAt}
+            currentLevel={currentLevel}
+            coins={coins}
+            isButtonFlipped={isButtonFlipped}
+            onClickCoin={onClickCoin}
           />
-        </section>
-
-        <section className="flex items-center justify-center bg-[url('assets/images/coins.png')] bg-contain bg-center bg-no-repeat px-10 py-20">
-          <Counter value={coins} />
-        </section>
-
-        <Button isFlipped={isButtonFlipped} onClick={clickCoin} />
+        ) : (
+          <InvitePage />
+        )}
       </main>
     </div>
   );

@@ -17,6 +17,8 @@
   --animate-flip-coin: flip-coin 1s forwards;
   --animate-unflip-coin: unflip-coin 1s forwards;
 
+  --animate-float-up: float-up 700ms ease-out forwards;
+
   @keyframes flip-coin {
     from {
       transform: rotateY(0deg);
@@ -36,6 +38,20 @@
     to {
       transform: rotateY(0deg);
       content: url("assets/images/tails.png");
+    }
+  }
+
+  @keyframes float-up {
+    0% {
+      opacity: 0;
+      transform: translateY(6px) scale(0.95);
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-28px) scale(1.1);
     }
   }
 }

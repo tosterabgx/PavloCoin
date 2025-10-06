@@ -7,7 +7,7 @@ export default function Button({ onClick, isFlipped }: Props) {
   return (
     <button
       type="button"
-      className="mb-15 aspect-square h-72 touch-none rounded-full"
+      className="aspect-square h-72 touch-none rounded-full duration-50 active:scale-95"
       onPointerDown={onClick}
     >
       <img
