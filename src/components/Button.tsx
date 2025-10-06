@@ -7,8 +7,8 @@ export default function Button({ onClick, isFlipped }: Props) {
   return (
     <button
       type="button"
-      className="mb-15 aspect-square h-72 rounded-full"
-      onClick={onClick}
+      className="mb-15 aspect-square h-72 touch-none rounded-full"
+      onPointerDown={onClick}
     >
       <img
         alt="Tap to earn"
