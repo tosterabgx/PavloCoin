@@ -11,7 +11,7 @@ export default function MainPage() {
       </Panel>
 
       <Panel>
-        <div className="flex h-100 w-full flex-col divide-y divide-white/40">
+        <div className="flexs min-h-65 w-full flex-col divide-y divide-white/40">
           <div className="flex flex-col justify-center p-5 text-center">
             <span className="text-xl font-semibold">
               <span className="font-pixelify font-bold">Pavlik</span>, who

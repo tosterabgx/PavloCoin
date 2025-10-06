@@ -23,7 +23,7 @@ export default function App() {
       flipButton(!isButtonFlipped);
 
       if ("vibrate" in navigator) {
-        navigator.vibrate([200, 50, 200]);
+        navigator.vibrate(500);
       }
     }
   }
