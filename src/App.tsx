@@ -5,6 +5,8 @@ import InvitePage from "./components/InvitePage";
 import { useState, useMemo, useEffect } from "react";
 import { useTelegram } from "./hooks/useTelegram";
 
+import ghost from "./assets/images/ghost.png";
+
 export default function App() {
   const { tg, user } = useTelegram();
 
@@ -47,7 +49,8 @@ export default function App() {
       }
     >
       <Topbar
-        username={user?.username ?? user?.first_name ?? "@notfound"}
+        username={"@" + (user?.username ?? user?.first_name ?? "notfound")}
+        avatar={user?.photo_url ?? ghost}
         onClick={() => setMainPage(!isMainPage)}
       />
       <main className="flex w-full flex-1 flex-col items-center justify-between pb-15">
