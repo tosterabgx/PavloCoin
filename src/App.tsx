@@ -2,9 +2,16 @@ import Topbar from "./components/Topbar";
 import MainPage from "./components/MainPage";
 import InvitePage from "./components/InvitePage";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useTelegram } from "./hooks/useTelegram";
 
 export default function App() {
+  const { tg, user } = useTelegram();
+
+  useEffect(() => {
+    tg.ready();
+  }, [tg]);
+
   const [isMainPage, setMainPage] = useState(true);
 
   const [coins, setCoins] = useState(0);
@@ -39,7 +46,10 @@ export default function App() {
         additionalBackground
       }
     >
-      <Topbar username="@username" onClick={() => setMainPage(!isMainPage)} />
+      <Topbar
+        username={user?.username ?? user?.first_name ?? "@notfound"}
+        onClick={() => setMainPage(!isMainPage)}
+      />
       <main className="flex w-full flex-1 flex-col items-center justify-between pb-15">
         {isMainPage ? (
           <MainPage
